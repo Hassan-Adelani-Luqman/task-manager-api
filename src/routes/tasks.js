@@ -27,4 +27,28 @@ router.post('/', (req, res) => {
   res.status(201).json(task);
 });
 
+// US-004: Update an existing task
+router.put('/:id', (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  try {
+    const task = store.updateTask(id, req.body);
+    if (!task) {
+      return res.status(404).json({ error: `Task with id ${id} not found` });
+    }
+    res.status(200).json(task);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// US-005: Delete a task
+router.delete('/:id', (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const deleted = store.deleteTask(id);
+  if (!deleted) {
+    return res.status(404).json({ error: `Task with id ${id} not found` });
+  }
+  res.status(204).send();
+});
+
 module.exports = router;
