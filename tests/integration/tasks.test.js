@@ -60,3 +60,48 @@ describe('GET /tasks/:id', () => {
     expect(res.body.error).toBeDefined();
   });
 });
+
+describe('PUT /tasks/:id', () => {
+  it('updates and returns the task with 200', async () => {
+    const task = store.createTask({ title: 'Old' });
+    const res = await request(app)
+      .put(`/tasks/${task.id}`)
+      .send({ title: 'New', status: 'in-progress' });
+    expect(res.status).toBe(200);
+    expect(res.body.title).toBe('New');
+    expect(res.body.status).toBe('in-progress');
+  });
+
+  it('returns 400 for an invalid status', async () => {
+    const task = store.createTask({ title: 'T' });
+    const res = await request(app)
+      .put(`/tasks/${task.id}`)
+      .send({ status: 'invalid-status' });
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 404 for a non-existent ID', async () => {
+    const res = await request(app).put('/tasks/9999').send({ title: 'X' });
+    expect(res.status).toBe(404);
+  });
+});
+
+describe('DELETE /tasks/:id', () => {
+  it('deletes a task and returns 204', async () => {
+    const task = store.createTask({ title: 'Delete Me' });
+    const res = await request(app).delete(`/tasks/${task.id}`);
+    expect(res.status).toBe(204);
+  });
+
+  it('confirms the task is gone after deletion', async () => {
+    const task = store.createTask({ title: 'Gone' });
+    await request(app).delete(`/tasks/${task.id}`);
+    const res = await request(app).get(`/tasks/${task.id}`);
+    expect(res.status).toBe(404);
+  });
+
+  it('returns 404 for a non-existent ID', async () => {
+    const res = await request(app).delete('/tasks/9999');
+    expect(res.status).toBe(404);
+  });
+});
